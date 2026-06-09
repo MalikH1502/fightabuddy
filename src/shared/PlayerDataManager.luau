@@ -1,9 +1,3 @@
-local DataStoreService = game:GetService("DataStoreService")
-local Players = game:GetService("Players")
-
-local DataStore = DataStoreService:GetDataStore("PlayerData")
-
-
 local defData = {
 	inventory = {"BasicGloves"},
 	money = 0,
@@ -15,125 +9,118 @@ local PlayerData = {}
 
 local PlayerDataManager = {}
 
-local function CreateLeaderstats(player)
-	local leaderstats = Instance.new("Folder")
-	leaderstats.Name = "leaderstats"
-	leaderstats.Parent = player
+local function CloneValue(value)
+	if type(value) ~= "table" then
+		return value
+	end
 
-	local money = Instance.new("IntValue")
-	money.Name = "Money"
-	money.Value = PlayerData[player.UserId].money
-	money.Parent = leaderstats
-
-	local KO = Instance.new("IntValue")
-	KO.Name = "KO"
-	KO.Value = PlayerData[player.UserId].KO
-	KO.Parent = leaderstats
+	local copy = {}
+	for index, item in ipairs(value) do
+		copy[index] = CloneValue(item)
+	end
+	return copy
 end
 
-local function LoadPlayerData(player)
-	local playerID = player.UserId
-	local success, data
-
-	local attempts = 0
-	repeat
-		attempts+=1
-		success,data = pcall(function()
-			return DataStore:GetAsync(playerID)
-		end)
-	until attempts >= 3
-	if not success then
-		warn("Failed to Load data for "..player.Name)
+local function CreateDefaultData()
+	local data = {}
+	for key, value in pairs(defData) do
+		data[key] = CloneValue(value)
 	end
-	if success then
-		if data then
-			PlayerData[playerID] = data
-		else
-			PlayerData[playerID] = {}
-			for i,v in pairs(defData) do
-				PlayerData[playerID][i] = v
-			end
-		end
-	else
-		PlayerData[playerID] = {}
-		for i,v in pairs(defData) do
-			PlayerData[playerID][i] = v
-		end
-	end
-	CreateLeaderstats(player)
+	return data
 end
 
-local function SavePlayerData(player)
+local function EnsurePlayerData(player)
 	local playerID = player.UserId
-	local playerData = PlayerData[playerID]
-	local success
-
-	local attempts = 0
-	repeat
-		attempts+=1
-		success = pcall(function()
-			return DataStore:SetAsync(playerID, playerData)
-		end)
-	until attempts >= 3
-	if not success then
-		warn("Failed to Save data for "..player.Name)
+	if not PlayerData[playerID] then
+		PlayerData[playerID] = CreateDefaultData()
 	end
+	return PlayerData[playerID]
+end
+
+function PlayerDataManager.InitializePlayerData(player, data)
+	local playerID = player.UserId
+	local playerData = CreateDefaultData()
+
+	if type(data) == "table" then
+		for key, value in pairs(data) do
+			playerData[key] = CloneValue(value)
+		end
+	end
+
+	PlayerData[playerID] = playerData
+	return playerData
+end
+
+function PlayerDataManager.ClearPlayerData(player)
+	PlayerData[player.UserId] = nil
 end
 
 function PlayerDataManager.GetPlayerData(player, key)
 	local playerID = player.UserId
-	if PlayerData[playerID] then
-		return PlayerData[playerID][key]
+	local data = PlayerData[playerID]
+	if data then
+		if key == nil then
+			return data
+		end
+		return data[key]
 	end
 	return nil
 end
 
 function PlayerDataManager.SetPlayerData(player,key,value)
 	local playerID = player.UserId
-	if PlayerData[playerID] then
-		PlayerData[playerID][key] = value
-
-		local leaderstats = player:FindFirstChild("leaderstats")
-		if leaderstats then
-			local stat = leaderstats:FindFirstChild(key)
-			if stat then
-				stat.Value = value
-			end
-		end
-		return true
+	if key == nil then
+		return false
 	end
-	return false
+
+	local data = EnsurePlayerData(player)
+	data[key] = CloneValue(value)
+
+	local leaderstats = player:FindFirstChild("leaderstats")
+	if leaderstats then
+		local statName = key == "money" and "Money" or key
+		local stat = leaderstats:FindFirstChild(statName)
+		if stat then
+			stat.Value = value
+		end
+	end
+
+	if PlayerDataManager.OnPlayerDataChanged then
+		PlayerDataManager.OnPlayerDataChanged:Fire(player, key, data[key])
+	end
+	return true
 end
 
 function PlayerDataManager.AddMoney(player, amount)
 	if amount == 0 then return end
-	local currentMoney = PlayerDataManager.GetPlayerData(player, "money")
+	local currentMoney = PlayerDataManager.GetPlayerData(player, "money") or 0
 	PlayerDataManager.SetPlayerData(player, "money", currentMoney + amount)
 end
 
 -- In PlayerDataManager
 function PlayerDataManager.AddItemToInventory(player, itemName)
-	local playerData = PlayerDataManager.GetPlayerData(player)
-	if not playerData then return end
+	local inventory = PlayerDataManager.GetPlayerData(player, "inventory")
+	if type(inventory) ~= "table" then
+		inventory = {}
+	end
 
 	-- Check if item already exists to prevent duplicates
-	for i, existingItem in pairs(playerData.Inventory) do
+	for _, existingItem in ipairs(inventory) do
 		if existingItem == itemName then
-			print("Item already in inventory, not adding duplicate:", itemName)
-			return -- Don't add duplicate
+			return false
 		end
 	end
 
 	-- Add item if not already present
-	table.insert(playerData.Inventory, itemName)
-	print("Added to inventory:", itemName)
-
-	-- Save data immediately
-	PlayerDataManager.SetPlayerData(player)
+	table.insert(inventory, itemName)
+	PlayerDataManager.SetPlayerData(player, "inventory", inventory)
+	if PlayerDataManager.OnPlayerDataChanged then
+		PlayerDataManager.OnPlayerDataChanged:Fire(player, "inventory", inventory)
+	end
+	return true
 end
 
 function PlayerDataManager.EquipItem(player, itemName)
-	local inventory = PlayerDataManager.GetPlayerData(player, "inventory")
 	PlayerDataManager.SetPlayerData(player, "Equipped", itemName)
 	PlayerDataManager:ItemEquipped(player)
 end
@@ -148,32 +135,8 @@ end
 PlayerDataManager.OnItemEquipped = Instance.new("BindableEvent")
 PlayerDataManager.OnItemEquipped.Name = "ItemEquippedEvent"
 
-Players.PlayerAdded:Connect(function(player)
-	LoadPlayerData(player)
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-	SavePlayerData(player)
-	PlayerData[player.UserId] = nil
-end)
-
-spawn(function()
-	while true do
-		wait(300)
-		for _, player in pairs(Players:GetPlayers()) do
-			SavePlayerData(player)
-		end
-		print("Auto-saved all player data")
-	end
-end)
-
-game:BindToClose(function()
-	print("Server shutting down, saving all data...")
-	for _, player in pairs(Players:GetPlayers()) do
-		SavePlayerData(player)
-	end
-	wait(2)
-end)
+PlayerDataManager.OnPlayerDataChanged = Instance.new("BindableEvent")
+PlayerDataManager.OnPlayerDataChanged.Name = "PlayerDataChangedEvent"
 
 
 

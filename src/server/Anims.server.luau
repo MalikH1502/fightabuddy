@@ -30,7 +30,6 @@ end
 
 -- Events
 local damageEvent = ReplicatedStorage:WaitForChild("DamageEvent")
-local playerDiedEvent = ReplicatedStorage:FindFirstChild("PlayerDiedEvent")
 local moneyNotificationEvent = ReplicatedStorage:FindFirstChild("MoneyNotificationEvent")
 
 -- [[ CONSTANTS ]]
@@ -114,45 +113,8 @@ damageEvent.OnServerEvent:Connect(function(attacker, targetPlayer, _, hitPositio
 	targetHumanoid:TakeDamage(damage)
 
 	if targetHumanoid.Health <= 0 and oldHealth > 0 then
-		if playerDiedEvent then playerDiedEvent:FireAllClients(targetPlayer, attacker) end
 		if _G.AddKO then _G.AddKO(attacker, 1) end
 	end
-end)
-
--- =================================================================
--- DEATH HANDLER (Fallback)
--- =================================================================
--- This catches deaths that happen from other sources (like falling void)
--- ensuring the last person to hit them still gets credit.
-
-Players.PlayerAdded:Connect(function(player)
-	player.CharacterAdded:Connect(function(character)
-		local humanoid = character:WaitForChild("Humanoid")
-
-		humanoid.Died:Connect(function()
-			-- Find who hit them last
-			for _, otherPlayer in pairs(Players:GetPlayers()) do
-				if CollectionService:HasTag(otherPlayer, "Last") then
-					-- Grant Bonus for Kill
-					if _G.AddKO then _G.AddKO(otherPlayer, 1) end
-
-					local killBonus = 35
-					PlayerDataManager.AddMoney(otherPlayer, killBonus)
-
-					if moneyNotificationEvent then
-						moneyNotificationEvent:FireClient(otherPlayer, killBonus)
-					end
-
-					if _G.UpdatePlayerLeaderstats then
-						_G.UpdatePlayerLeaderstats(otherPlayer)
-					end
-
-					CollectionService:RemoveTag(otherPlayer, "Last")
-					break -- Stop looking after finding the killer
-				end
-			end
-		end)
-	end)
 end)
 
 -- Clean up tags on leave

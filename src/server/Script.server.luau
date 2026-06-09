@@ -1,6 +1,6 @@
 local Players = game:GetService("Players")
 local gloveStorage = game:GetService("ReplicatedStorage").Gloves
-local PlayerDataManager = require(game:GetService("ReplicatedStorage").PlayerDataManager)
+local PlayerDataManager = require(game:GetService("ReplicatedStorage").Shared.PlayerDataManager)
 
 local function unEquipGloves(character)
 	local humanoid = character:FindFirstChild("Humanoid")

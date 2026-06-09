@@ -49,15 +49,17 @@ function AdminSystem:ParseArguments(message)
 end
 
 -- Function to find players by partial name
-function AdminSystem:FindPlayer(name)
+
+-- Function to find players by partial name
+function AdminSystem:FindPlayer(name, currentPlayer)
 	if name:lower() == "me" then
-		return {Players:GetPlayerFromUserId(game.CreatorId)}
+		return currentPlayer and {currentPlayer} or {}
 	elseif name:lower() == "all" then
 		return Players:GetPlayers()
 	elseif name:lower() == "others" then
 		local players = {}
 		for _, player in pairs(Players:GetPlayers()) do
-			if player.Name ~= Players.LocalPlayer.Name then
+			if not currentPlayer or player ~= currentPlayer then
 				table.insert(players, player)
 			end
 		end
@@ -227,7 +229,7 @@ end)
 
 -- Kill Command
 AdminSystem:RegisterCommand("kill", {"k"}, "Kill a player", 1, function(player, args, adminSystem)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 
 	if #targets == 0 then
 		adminSystem:SendMessage(player, "Player not found: " .. args[1], Color3.new(1, 0, 0))
@@ -244,7 +246,7 @@ end)
 
 -- Teleport Command
 AdminSystem:RegisterCommand("tp", {"teleport"}, "Teleport to a player", 1, function(player, args, adminSystem)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 
 	if #targets == 0 then
 		adminSystem:SendMessage(player, "Player not found: " .. args[1], Color3.new(1, 0, 0))
@@ -261,7 +263,7 @@ end)
 
 -- Bring Command
 AdminSystem:RegisterCommand("bring", {"summon"}, "Bring a player to you", 1, function(player, args, adminSystem)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 
 	if #targets == 0 then
 		adminSystem:SendMessage(player, "Player not found: " .. args[1], Color3.new(1, 0, 0))
@@ -284,7 +286,7 @@ end)
 -- Give Money Command
 AdminSystem:RegisterCommand("givemoney", {"money"}, "Give money to a player", 2, function(player, args, adminSystem)
 	local PlayerDataManager = require(game.ReplicatedStorage.PlayerDataManager)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 	local amount = tonumber(args[2])
 
 	if not amount then
@@ -306,7 +308,7 @@ end)
 -- Give Item Command
 AdminSystem:RegisterCommand("giveitem", {"item"}, "Give specific item to a player", 2, function(player, args, adminSystem)
 	local PlayerDataManager = require(game.ReplicatedStorage.PlayerDataManager)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 	local itemName = args[2]
 
 	if #targets == 0 then
@@ -323,7 +325,7 @@ end)
 -- Give All Items Command
 AdminSystem:RegisterCommand("giveallitems", {"allitems"}, "Give all items to a player", 1, function(player, args, adminSystem)
 	local PlayerDataManager = require(game.ReplicatedStorage.PlayerDataManager)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 
 	if #targets == 0 then
 		adminSystem:SendMessage(player, "Player not found: " .. args[1], Color3.new(1, 0, 0))
@@ -343,7 +345,7 @@ end)
 
 -- Clown Kidnap Command
 AdminSystem:RegisterCommand("clown", {"kidnap"}, "Kidnap a player with a clown", 1, function(player, args, adminSystem)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 
 	if #targets == 0 then
 		adminSystem:SendMessage(player, "Player not found: " .. args[1], Color3.new(1, 0, 0))
@@ -398,7 +400,7 @@ end)
 
 -- Dog Command
 AdminSystem:RegisterCommand("dog", {"doggy"}, "Turn a player into a dog", 1, function(player, args, adminSystem)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 
 	if #targets == 0 then
 		adminSystem:SendMessage(player, "Player not found: " .. args[1], Color3.new(1, 0, 0))
@@ -489,7 +491,7 @@ end)
 
 -- Poop Command
 AdminSystem:RegisterCommand("poop", {"💩"}, "Make a player poop", 1, function(player, args, adminSystem)
-	local targets = adminSystem:FindPlayer(args[1])
+	local targets = adminSystem:FindPlayer(args[1], player)
 
 	if #targets == 0 then
 		adminSystem:SendMessage(player, "Player not found: " .. args[1], Color3.new(1, 0, 0))

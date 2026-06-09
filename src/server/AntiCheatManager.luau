@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local MessagingService = game:GetService("MessagingService")
 
-local AntiCheatConfig = require(ReplicatedStorage.AntiCheatConfig)
+local AntiCheatConfig = require(ReplicatedStorage.Shared:WaitForChild("AntiCheatConfig"))
 
 local AntiCheatManager = {}
 
