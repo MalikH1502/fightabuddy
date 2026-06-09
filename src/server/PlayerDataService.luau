@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local DataStoreService = game:GetService("DataStoreService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local PlayerDataManager = require(ReplicatedStorage:WaitForChild("PlayerDataManager"))
+local PlayerDataManager = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 
 local PlayerDataService = {}
 

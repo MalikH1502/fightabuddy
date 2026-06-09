@@ -6,7 +6,7 @@ local Debris = game:GetService("Debris")
 -- Modules
 -- Ensure these exist in the correct spots or the script will wait infinitely
 local AntiCheatManager = require(script.Parent:FindFirstChild("AntiCheatManager") or ReplicatedStorage:FindFirstChild("AntiCheatManager")) 
-local PlayerDataManager = require(ReplicatedStorage:WaitForChild("PlayerDataManager"))
+local PlayerDataManager = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 
 -- Setup Stats Tables
 local knockBackTable = {}

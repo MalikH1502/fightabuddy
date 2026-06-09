@@ -1,7 +1,7 @@
 -- Place this in ServerScriptService. Make sure "GetEquippedGlove" RemoteFunction exists in ReplicatedStorage!
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local PlayerDataManager = require(ReplicatedStorage:WaitForChild("PlayerDataManager"))
+local PlayerDataManager = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 
 local remote = ReplicatedStorage:FindFirstChild("GetEquippedGlove")
 if not remote then

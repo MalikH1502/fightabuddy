@@ -2,7 +2,7 @@ local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local dailyRewardStore = DataStoreService:GetDataStore("DailyRewardDataStore")
-local module = require(ReplicatedStorage:WaitForChild("PlayerDataManager"))
+local module = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 
 local REWARD_INTERVAL = 24 * 60 * 60 -- 24 hours in seconds
 local DAILY_REWARD_AMOUNT = 100 -- Amount given as daily reward

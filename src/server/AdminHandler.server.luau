@@ -175,7 +175,7 @@ end
 -- Add this to your AdminSystem
 AdminSystem:RegisterCommand("cleaninventory", {"cleaninv"}, "Remove duplicate items from inventory", 1, function(player, args, adminSystem)
 	local success, PlayerDataManager = pcall(function()
-		return require(game.ReplicatedStorage.PlayerDataManager)
+		return require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 	end)
 
 	if not success then
@@ -285,7 +285,7 @@ end)
 
 -- Give Money Command
 AdminSystem:RegisterCommand("givemoney", {"money"}, "Give money to a player", 2, function(player, args, adminSystem)
-	local PlayerDataManager = require(game.ReplicatedStorage.PlayerDataManager)
+	local PlayerDataManager = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 	local targets = adminSystem:FindPlayer(args[1], player)
 	local amount = tonumber(args[2])
 
@@ -307,7 +307,7 @@ end)
 
 -- Give Item Command
 AdminSystem:RegisterCommand("giveitem", {"item"}, "Give specific item to a player", 2, function(player, args, adminSystem)
-	local PlayerDataManager = require(game.ReplicatedStorage.PlayerDataManager)
+	local PlayerDataManager = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 	local targets = adminSystem:FindPlayer(args[1], player)
 	local itemName = args[2]
 
@@ -324,7 +324,7 @@ end)
 
 -- Give All Items Command
 AdminSystem:RegisterCommand("giveallitems", {"allitems"}, "Give all items to a player", 1, function(player, args, adminSystem)
-	local PlayerDataManager = require(game.ReplicatedStorage.PlayerDataManager)
+	local PlayerDataManager = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 	local targets = adminSystem:FindPlayer(args[1], player)
 
 	if #targets == 0 then

@@ -12,7 +12,7 @@ local coinsFolder = ReplicatedStorage:WaitForChild("Coins")
 local workspaceCoins = workspace:FindFirstChild("Coins") or Instance.new("Folder", workspace)
 workspaceCoins.Name = "Coins"
 
-local PlayerDataManager = require(ReplicatedStorage:WaitForChild("PlayerDataManager"))
+local PlayerDataManager = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("PlayerDataManager"))
 local MoneyNotificationEvent = ReplicatedStorage:WaitForChild("MoneyNotificationEvent")
 
 -- Helper: Animation for coin collect
